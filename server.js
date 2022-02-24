@@ -26,7 +26,7 @@ app.use(express.static("public"));
 
 const db = require("./app/models");
 
-//db.sequelize.sync();
+db.sequelize.sync();
 
 // // drop the table if it already exists
 // db.sequelize.sync({ force: true }).then(() => {
@@ -39,7 +39,6 @@ app.get("/api/test", (req, res) => {
 });
 
 require("./app/routes")(app);
-console.log([process.env,'process.env.PORT'])
 // set port, listen for requests
 const PORT = process.env.PORT || 2083;
 app.listen(PORT, () => {

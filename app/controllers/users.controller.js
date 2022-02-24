@@ -6,7 +6,6 @@ const crypto = require('crypto');
 const OAuth = require('oauth-1.0a');
 const fs = require('fs');
 const user_model = require('../modules/user.js');
-const User = db.users;
 const Op = db.Sequelize.Op;
 const { QueryTypes  } = require("sequelize");
 var bcrypt = require('bcrypt');
@@ -15,41 +14,9 @@ exports.login = async (req, res) => {
   res.header={
     "Access-Control-Allow-Origin":"*"
   }
-  let body=null;
-  var condition = {};
-  let email = req.body.email;
-  let password = req.body.password; 
-  //var salt = bcrypt.genSaltSync(8);
-  //password = bcrypt.hashSync(password, salt);
-  //password = password.replace('$2b$', '$2y$');
-  condition.where = {
-    email: {
-      [Op.eq]: `${email}`
-    }
-  };
-  if(!await User.count(condition))body={code:2,msg:'Email is not exist!'};
-  else{
-    await User.findAll(condition)
-    .then(data => {
-      for (let row of data) {
-        var dbpass=row.dataValues.password;
-        dbpass = dbpass.replace('$2y$', '$2b$');
-        if(bcrypt.compareSync(password, dbpass)){
-          body={code:0,msg:'success',user:row};    
-          break;
-        }
-      }      
-      if(body==null)body={code:1,msg:'Password is wrong!'};
-    }).catch(err => {
-      console.error(err);
-    });
-
-    if(body.code==0){
-      var img=await user_model.getAvatar(body.user.id);
-      body={...body,avatar:img};
-    }
-    
-  }
+  let email = req.query.email;
+  let password = req.query.password; 
+  let body=await user_model.login(email,password);
   res.status(200).send(body);
 };
 exports.register = async (req, res) => {
@@ -121,5 +88,19 @@ exports.register = async (req, res) => {
     });
   }
   if(body==null)body={ code:2,msg:'error' };
+  res.status(200).send(body);
+};
+exports.verifyToken = async (req, res) => {
+  res.header={
+    "Access-Control-Allow-Origin":"*"
+  }
+  const token =
+    req.body.token || req.query.token || req.headers["x-access-token"] || req.headers['Authorization'] || req.headers['authorization'];
+  let body=await user_model.verifyToken(token);
+  res.status(200).send(body);
+};
+exports.getTreeData = async (req, res) => {
+  let user_id = req.body.user_id;
+  let body=await user_model.getTreeData(user_id);
   res.status(200).send(body);
 };

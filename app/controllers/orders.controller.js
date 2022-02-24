@@ -5,16 +5,9 @@ const request = require('request');
 const crypto = require('crypto');
 const OAuth = require('oauth-1.0a');
 const fs = require('fs');
-const user_model = require('../modules/user.js');
-const User = db.users;
-const Op = db.Sequelize.Op;
-const { QueryTypes  } = require("sequelize");
-var bcrypt = require('bcrypt');
-
+const order_model = require('../modules/order.js');
 exports.getOrderTableData = async (req, res) => {
-  res.header={
-    "Access-Control-Allow-Origin":"*"
-  }
-  let body=null;
+  let pagination = req.body.pagination;
+  let body=await order_model.getOrderTableData(pagination);
   res.status(200).send(body);
 };
